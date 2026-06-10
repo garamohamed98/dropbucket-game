@@ -6,13 +6,11 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import io.github.firstGame.entity.Bomb;
 import io.github.firstGame.entity.Drop;
 import io.github.firstGame.entity.DropSpawner;
 import io.github.firstGame.entity.Player;
@@ -24,12 +22,15 @@ public class Main implements ApplicationListener {
     Player player;
 
     Sound dropSound;
+    Sound bombSound;
     Music music;
 
     SpriteBatch spriteBatch;
     FitViewport viewport;
 
     DropSpawner dropSpawner;
+    int score;
+    private BitmapFont font;
 
 
     @Override
@@ -37,6 +38,7 @@ public class Main implements ApplicationListener {
         backgroundTexture = new Texture("background.png");
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+        bombSound = Gdx.audio.newSound(Gdx.files.internal("bomb.mp3"));
 
         spriteBatch = new SpriteBatch();
         viewport = new FitViewport(8,5);
@@ -51,6 +53,10 @@ public class Main implements ApplicationListener {
         music.setVolume(.5f);
         music.play();
 
+        font = new BitmapFont();
+        font.getData().setScale(0.02f);
+        font.setUseIntegerPositions(false);
+        score = 0;
 
     }
 
@@ -113,6 +119,7 @@ public class Main implements ApplicationListener {
         player.draw(spriteBatch);
         dropSpawner.draw(spriteBatch);
 
+        font.draw(spriteBatch, "Score: " + score, 0.2f, 4.8f);
 
         spriteBatch.end();
 
@@ -122,7 +129,16 @@ public class Main implements ApplicationListener {
         for(Drop drop: dropSpawner.getDrops()){
             if(player.getRectangle().overlaps(drop.getRectangle())){
                 dropSound.play();
+                score++;
                 drop.kill();
+            }
+        }
+
+        for(Bomb bomb: dropSpawner.getBombs()){
+            if (player.getRectangle().overlaps(bomb.getRectangle())){
+                bombSound.play();
+                score = 0;
+                bomb.kill();
             }
         }
     }
